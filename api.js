@@ -3,32 +3,51 @@
 
 function _delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// POST /api/analyse —— 拍照识热量（走本地 Node 代理 → 豆包视觉）
-// req: { image: base64字符串 }  res: { code, data:{ items[], totalKcal, tip } }
-// 前端直连豆包会被 CORS 拦截且 Key 会泄露，故统一走同源代理 server.js。
-const API_BASE = (location.hostname && location.hostname !== 'file') ? '' : 'http://localhost:3000';
+// ---- 识别后端地址（Cloudflare Worker，已部署）----
+// 优先走云端 Worker（真实 DeepSeek 识别）；失败时回退本地 server.js（开发用）；再失败回退演示数据。
+const RECOGNIZE_URL = "https://heat-tracking-app.a1799647073.workers.dev";
+
 async function apiRecognize(imageData) {
   const base64 = typeof imageData === 'string' ? imageData
                : (imageData && imageData.base64) || '';
   const payload = { image: base64 };
 
+  // 1) 云端 Worker（公网部署，真实识别）
   try {
-    const resp = await fetch(API_BASE + '/api/analyse', {
+    const resp = await fetch(RECOGNIZE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     const r = await resp.json();
     if (r.code === 0) return r;
-    throw new Error(r.msg || '识别服务异常');
-  } catch (e) {
-    // 代理不可用或识别报错 → 回退 mock，但把原因透出，避免误以为是真实结果
-    console.warn('[apiRecognize] fallback mock:', e);
-    return { code:0, data:{ items:[
-      { id:"f1", name:"宫保鸡丁饭（大份）[演示]", kcal:650, gram:380 },
-      { id:"f2", name:"清炒时蔬[演示]", kcal:85, gram:180 },
-    ], totalKcal:735, tip:"识别失败，回退演示数据。原因: " + (e && e.message ? e.message : e) } };
+    throw new Error('云端识别:' + (r.msg || '服务异常'));
+  } catch (e1) {
+    console.warn('[apiRecognize] cloud worker fail:', e1);
   }
+
+  // 2) 本地开发代理（仅本机跑 server.js 时可用）
+  const localBase = (location.hostname && location.hostname !== 'file') ? '' : 'http://localhost:3000';
+  if (localBase) {
+    try {
+      const resp = await fetch(localBase + '/api/analyse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const r = await resp.json();
+      if (r.code === 0) return r;
+      throw new Error(r.msg || '本地识别异常');
+    } catch (e2) {
+      console.warn('[apiRecognize] local proxy fail:', e2);
+    }
+  }
+
+  // 3) 兜底演示数据（透出原因，避免误以为是真实结果）
+  return { code:0, data:{ items:[
+    { id:"f1", name:"宫保鸡丁饭（大份）[演示]", kcal:650, gram:380 },
+    { id:"f2", name:"清炒时蔬[演示]", kcal:85, gram:180 },
+  ], totalKcal:735, tip:"识别服务暂不可用，已回退演示数据" } };
 }
 
 // POST /api/voice —— 语音转文字 + 提取食物
