@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>热量拍拍 · AI 拍照识热量</title>
+<meta name="theme-color" content="#16a34a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="热量拍拍">
+<meta name="description" content="拍一下，算热量。AI 识别餐食热量，简单记录每一餐。">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+<style>
+svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.line-chart{display:flex;align-items:flex-end;gap:4px;height:110px;padding:8px 6px 0;}
+.line-chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;}
+.line-chart .dot{width:8px;height:8px;border-radius:50%;background:var(--brand);position:relative;}
+.line-chart .col::after{content:"";position:absolute;right:-50%;width:100%;top:4px;height:2px;background:var(--border);}
+.line-chart .v{font-size:9px;color:var(--text-3);transform:rotate(-40deg);white-space:nowrap;}
+.note-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text-3);}
+</style>
+</head>
+<body>
+
+<main class="phone">
+  <div class="screen" id="screen">
+
+    <!-- ============ 页面 1 · 今日 ============ -->
+    <section class="page active" id="page-home">
+      <header class="top">
+        <div class="wordmark">
+          <span class="logo">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+          </span>
+          <div>
+          <div class="name">热量拍拍</div>
+          <div style="font-size:10px;color:var(--text-3);">AI 拍照识热量</div>
+        </div>
+      </div>
+    </header>
+
+      <div class="greet">
+        <h1>晚上好，吃得怎么样？</h1>
+        <p>把每餐拍下来，热量自然就知道。</p>
+      </div>
+
+      <section class="budget">
+        <div class="budget-info">
+          <div class="budget-label">
+            <svg width="15" height="15" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+            今日已摄入
+          </div>
+          <div class="budget-num"><span id="consumedNum">845</span><small> / 1800 kcal</small></div>
+          <div class="budget-remain">还可以吃 <b id="remainKcal">955</b> kcal</div>
+          <div class="budget-bar"><i id="budgetFill" style="width:47%"></i></div>
+        </div>
+        <div class="ring">
+          <svg viewBox="0 0 100 100">
+            <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#2e9e6b"/><stop offset="1" stop-color="#5cc08a"/></linearGradient></defs>
+            <circle class="track" cx="50" cy="50" r="40"/>
+            <circle class="fill" id="ringFill" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="133"/>
+          </svg>
+          <div class="center"><em id="ringPct">47%</em><span>已用</span></div>
+        </div>
+      </section>
+
+      <button class="capture" id="btnCapture" aria-label="拍照识别热量">
+        <span class="ring-dec"></span><span class="ring-dec2"></span>
+        <div class="cap-bottom">
+          <span class="cam-btn">
+            <svg width="26" height="26" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          </span>
+          <span class="cap-txt">
+            <h2>拍摄餐食 · 一键算热量</h2>
+            <p>识别食物、克重与营养构成</p>
+          </span>
+        </div>
+        <svg class="cap-icon" width="26" height="26" viewBox="0 0 24 24"><path d="M12 3l1.9 5.7L19.6 10l-5.7 1.9L12 17.6l-1.9-5.7L4.4 10l5.7-1.9L12 3z"/></svg>
+      </button>
+
+      <div class="quick">
+        <button class="q-card" id="btnVoice">
+          <span class="q-ic voice"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></span>
+          <span class="q-txt"><h3>语音快记</h3><span>说一句话记一餐</span></span>
+        </button>
+        <button class="q-card" id="btnManual">
+          <span class="q-ic scale" style="background:var(--heat-soft);color:var(--heat);"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M4 10h16M8 6h8M12 6V4M9 18h6"/><path d="M12 4c-3 0-5 2-5 5 0 6 5 9 5 9s5-3 5-9c0-3-2-5-5-5z"/></svg></span>
+          <span class="q-txt"><h3>手动录入</h3><span>搜索食物库快速记</span></span>
+        </button>
+      </div>
+
+      <section class="weight">
+        <div class="weight-head">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 3 5-6"/></svg>
+            体重趋势
+          </h3>
+          <button class="link-more" onClick="nav('weight')">详情 »</button>
+        </div>
+        <div class="weight-main">
+          <span class="kg" id="homeWeightKg">66.0</span>
+          <span class="unit">kg</span>
+          <span class="delta dn"><svg width="14" height="14" viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg> -0.8kg</span>
+          <button class="weight-edit" id="btnEditWeight" style="margin-left:auto">打卡</button>
+        </div>
+        <div class="chart">
+          <div class="bar" style="height:52%"><span>67.6</span></div>
+          <div class="bar" style="height:46%"><span>67.2</span></div>
+          <div class="bar" style="height:50%"><span>66.9</span></div>
+          <div class="bar" style="height:46%"><span>66.6</span></div>
+          <div class="bar" style="height:43%"><span>66.4</span></div>
+          <div class="bar latest" style="height:36%"><span>66.0</span></div>
+        </div>
+      </section>
+
+      <section class="records">
+        <div class="records-title"><span>近期记录</span><button class="link-more" onClick="nav('records')">全部 »</button></div>
+        <div id="recordList"></div>
+      </section>
+    </section>
+
+    <!-- ============ 页面 2 · 记录 ============ -->
+    <section class="page" id="page-records">
+      <div class="page-hd">
+        <div><h2>饮食记录</h2><div class="sub" id="recordsSub">共 3 天 · 记录你的每一餐</div></div>
+        <div class="acts">
+          <button class="icon-btn" id="btnVoice2" aria-label="语音"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></button>
+          <button class="icon-btn" id="btnManual2" aria-label="添加"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+        </div>
+      </div>
+      <div class="nav-chips" id="dayChips"></div>
+      <div id="recordsList"></div>
+    </section>
+
+    <!-- ============ 页面 3 · 体重 ============ -->
+    <section class="page" id="page-weight">
+      <div class="page-hd">
+        <div><h2>体重管理</h2><div class="sub">坚持记录，看见变化</div></div>
+        <div class="acts"><button class="icon-btn" id="btnWeightCard" aria-label="打卡"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button></div>
+      </div>
+
+      <div class="chart-box">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 var(--space-2);">
+          <div class="weight-main" style="margin-top:0">
+            <span class="kg" id="weightBig">66.0</span><span class="unit">kg</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-2);text-align:right;">
+            <div style="font-weight:700;color:var(--brand)">↓ 1.6kg · 30天</div>
+            <div style="margin-top:2px;">距目标 62kg 还差 4kg</div>
+          </div>
+        </div>
+        <div class="line-chart" id="weightChart"></div>
+      </div>
+      <div class="chart-stats">
+        <div class="stat-item"><div class="sv" style="color:var(--brand)">72.1%</div><div class="sk">BMI 下降</div></div>
+        <div class="stat-item"><div class="sv">18</div><div class="sk">累计打卡</div></div>
+        <div class="stat-item"><div class="sv" style="color:var(--heat)">78%</div><div class="sk">目标进度</div></div>
+      </div>
+
+      <div class="goal-box">
+        <div class="t">目标体重 <b>62.0 kg</b><br><span style="font-size:11px;opacity:.75">还差 4.0 kg · 预计 8 周后达成</span></div>
+        <button id="btnEditGoal">修改目标</button>
+      </div>
+
+      <div class="sec-title"><span>体重记录</span><span class="more">共 11 条</span></div>
+      <div class="weightList" id="weightList"></div>
+      <div class="footnote">数据仅保存在本机，可随时导出或删除</div>
+    </section>
+
+    <!-- ============ 页面 4 · 我的 ============ -->
+    <section class="page" id="page-profile">
+      <div class="page-hd"><div><h2>我的</h2><div class="sub">设置与订阅</div></div></div>
+
+      <div class="me-card">
+        <span class="me-ava" id="rowAvatar" title="点击修改头像" style="cursor:pointer"><svg class="ava-default" width="24" height="24" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <div style="flex:1;cursor:pointer" id="rowNick" title="点击修改昵称">
+          <div class="me-name" id="nickName">健康记录者</div>
+          <span class="member-badge" id="memberBadge"><svg width="11" height="11" viewBox="0 0 24 24"><path d="M12 3l1.9 5.7L19.6 10l-5.7 1.9L12 17.6l-1.9-5.7L4.4 10l5.7-1.9L12 3z"/></svg> 标准版</span>
+        </div>
+        <span class="chev"><svg width="15" height="15" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </div>
+
+      <!-- 订阅卡 -->
+      <div class="pro-sub" id="subCard" style="background:linear-gradient(135deg,var(--brand),#23905f);border:none;color:#fff">
+        <span class="ps-badge">PRO</span>
+        <h3 id="subTitle">解锁不限次识别</h3>
+        <p id="subDesc">一次买断或年订阅，去掉每天的 3 次限制</p>
+        <button class="ps-btn" id="btnSubscribe" style="background:#fff;color:var(--brand-deep)">查看方案</button>
+      </div>
+
+      <div class="me-group">
+        <div class="me-row" id="rowGoal"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></span><div class="mt"><div class="t">每日热量目标</div><div class="s" id="goalText">1800 kcal</div></div><span class="chev">›</span></div>
+        <div class="me-row" id="rowAim"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><div class="mt"><div class="t">减重目标</div><div class="s">62.0 kg</div></div><span class="chev">›</span></div>
+        <div class="me-row"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div class="mt"><div class="t">隐私模式</div><div class="s">数据仅存本机</div></div>
+          <label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+        <div class="me-row" id="rowRedeem"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span><div class="mt"><div class="t">兑换码</div><div class="s">输入兑换码开通会员</div></div><span class="chev">›</span></div>
+      </div>
+
+      <div class="me-group">
+        <div class="me-row"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></span><div class="mt"><div class="t">导出数据 (CSV)</div><div class="s">本地生成文件</div></div><span class="chev">›</span></div>
+        <div class="me-row"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" x2="15" y1="9" y2="15"/><line x1="15" x2="9" y1="9" y2="15"/></svg></span><div class="mt"><div class="t">清除全部数据</div><div class="s">不可撤销</div></div><span class="chev" style="color:var(--bad)">›</span></div>
+        <div class="me-row"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg></span><div class="mt"><div class="t">关于与帮助</div><div class="s">版本 1.0.0</div></div><span class="chev">›</span></div>
+      </div>
+      <div class="footnote">评分 4.9 · 1.2k 评价 · 已有 2.3 万人使用</div>
+    </section>
+
+  </div><!-- /screen -->
+
+  <!-- 底部导航 -->
+  <nav class="tabbar">
+    <button class="tab active" data-nav="home" aria-label="今日">
+      <svg width="21" height="21" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>今日
+    </button>
+    <button class="tab" data-nav="records" aria-label="记录">
+      <svg width="21" height="21" viewBox="0 0 24 24"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>记录
+    </button>
+    <button class="tab-main" id="tabCapture" aria-label="拍照">
+      <svg width="26" height="26" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+    </button>
+    <button class="tab" data-nav="weight" aria-label="体重">
+      <svg width="21" height="21" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/></svg>体重
+    </button>
+    <button class="tab" data-nav="profile" aria-label="我的">
+      <svg width="21" height="21" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>我的
+    </button>
+  </nav>
+</main>
+
+<!-- 扫描 loading -->
+<div class="scan" id="scanOverlay">
+  <div class="frame">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="line"></span>
+  </div>
+  <p>正在识别餐食…</p>
+</div>
+
+<!-- 识别结果弹层 -->
+<div class="overlay" id="resultOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>识别结果</span><button class="x" id="closeResult" aria-label="关闭"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div class="result-card" id="resultBody"></div>
+    <div class="result-tip" id="resultTip">
+      <svg width="15" height="15" viewBox="0 0 24 24" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+      <span id="resultTipTxt">估算存在 ±20% 误差，可调整下列克重</span>
+    </div>
+    <div class="scale-row" id="scaleRow"></div>
+    <div class="cta-row">
+      <button class="btn ghost" id="btnAdjust">调整克重</button>
+      <button class="btn primary" id="btnSaveMeal">计入今日</button>
+    </div>
+  </div>
+</div>
+
+<!-- 语音弹层 -->
+<div class="overlay" id="voiceOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>语音快记</span><button class="x" id="closeVoice"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div class="voice-pad">
+      <div class="mic-lg rec" id="voiceMic"><svg width="30" height="30" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></div>
+      <div class="hint" id="voiceHint">正在聆听…</div>
+      <div class="sub">说一句，比如「牛肉荞麦面」</div>
+      <div class="wave" id="voiceWave"><i style="height:8px"></i><i style="height:20px"></i><i style="height:13px"></i><i style="height:26px"></i><i style="height:10px"></i><i style="height:22px"></i><i style="height:15px"></i><i style="height:24px"></i><i style="height:9px"></i><i style="height:18px"></i></div>
+    </div>
+  </div>
+</div>
+
+<!-- 手动录入弹层 -->
+<div class="overlay" id="manualOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>手动录入</span><button class="x" id="closeManual"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div class="search-box"><input id="manualInput" placeholder="搜索食物，如「鸡胸肉」" /></div>
+    <div class="search-res" id="manualRes"></div>
+  </div>
+</div>
+
+<!-- 手动调整克重弹层 -->
+<div class="overlay" id="gramOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>手动调整克重</span><button class="x" id="closeGram"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div class="gram-list" id="gramList"></div>
+    <div class="cta-row">
+      <button class="btn ghost" id="gramReset">重置</button>
+      <button class="btn primary" id="gramSave">保存调整</button>
+    </div>
+  </div>
+</div>
+
+<!-- 订阅弹层 -->
+<div class="overlay" id="subOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>升级 PRO</span><button class="x" id="closeSub"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div style="text-align:center;margin-bottom:var(--space-5);">
+      <div class="budget-label" style="justify-content:center;color:var(--text-2)"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 3l1.9 5.7L19.6 10l-5.7 1.9L12 17.6l-1.9-5.7L4.4 10l5.7-1.9L12 3z"/></svg>解锁全部功能</div>
+      <ul style="list-style:none;margin:12px 0 0;text-align:left;font-size:13px;color:var(--text-2);display:inline-block;">
+        <li style="padding:4px 0">· 不限次数拍照识别</li>
+        <li style="padding:4px 0">· 高级营养分析 & 误差修正</li>
+        <li style="padding:4px 0">· 长期体重趋势与目标预测</li>
+        <li style="padding:4px 0">· 无广告 · 数据完全本地</li>
+      </ul>
+    </div>
+    <div class="val-row" id="subOptions" style="margin-bottom:var(--space-5)"></div>
+    <button class="btn primary" id="btnPurchase" style="width:100%">确认购买</button>
+  </div>
+</div>
+
+<!-- 体重操作菜单 -->
+<div class="overlay" id="weightMenuOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span id="weightMenuTitle">体重记录</span><button class="x" id="closeWeightMenu"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <button class="menu-action" id="btnMenuEdit"><span class="ma-ic" style="color:var(--brand)"><svg width="19" height="19" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></span><span style="font-size:15px;font-weight:600">修改这条体重</span></button>
+    <button class="menu-action danger" id="btnMenuDelete"><span class="ma-ic" style="color:var(--bad)"><svg width="19" height="19" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span><span style="font-size:15px;font-weight:600;color:var(--bad)">删除这条记录</span></button>
+    <div class="cta-row"><button class="btn ghost" id="btnMenuCancel" style="flex:1">取消</button></div>
+  </div>
+</div>
+
+<!-- 体重打卡/编辑弹层 -->
+<div class="overlay" id="weightOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>记录体重</span><button class="x" id="closeWeight"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:6px;padding:0 4px;">
+      <input id="weightInput" type="number" step="0.1" value="66.0" inputmode="decimal"
+        style="width:160px;font-size:40px;font-weight:800;border:none;border-bottom:2px solid var(--border);background:transparent;color:var(--text);outline:none;">
+      <span style="font-size:15px;color:var(--text-3);margin-bottom:8px;">kg</span>
+    </div>
+    <div class="cta-row" style="margin-top:20px;"><button class="btn primary" id="btnSaveWeight" style="flex:1">保存</button></div>
+  </div>
+</div>
+
+<!-- 头像选择弹层 -->
+<div class="overlay" id="avatarOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>选择头像</span><button class="x" id="closeAvatar"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div class="ava-grid" id="avatarGrid"></div>
+  </div>
+</div>
+
+<!-- 兑换码弹层 -->
+<div class="overlay" id="redeemOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>兑换会员码</span><button class="x" id="closeRedeem"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div class="field"><label>兑换码</label>
+      <input id="redeemInput" placeholder="输入兑换码，如 HEATPRO10" autoComplete="off">
+    </div>
+    <div style="font-size:12px;color:var(--text-3);margin:-4px 2px 14px;">兑换码区分大小写 · 每码限用一次</div>
+    <div class="cta-row"><button class="btn primary" id="btnRedeem" style="flex:1">立即兑换</button></div>
+  </div>
+</div>
+
+<!-- 昵称编辑弹层 -->
+<div class="overlay" id="nickOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>修改昵称</span><button class="x" id="closeNick"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div class="field"><label>昵称</label><input id="nickInput" maxlength="15" placeholder="给自己起个名字"></div>
+    <div class="cta-row"><button class="btn primary" id="btnSaveNick" style="flex:1">保存</button></div>
+  </div>
+</div>
+
+<!-- 目标设置弹层 -->
+<div class="overlay" id="goalOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>修改目标</span><button class="x" id="closeGoal"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div class="field"><label>每日热量预算 (kcal)</label><input id="goalKcal" type="number" value="1800"></div>
+    <div class="field"><label>目标体重 (kg)</label><input id="goalKg" type="number" step="0.1" value="62"></div>
+    <div class="cta-row"><button class="btn primary" id="btnSaveGoal" style="flex:1">保存</button></div>
+  </div>
+</div>
+
+<!-- toast -->
+<div class="toast" id="toast"></div>
+
+<script src="mock.js"></script>
+<script src="api.js"></script>
+<script>
+/* ============ PWA：注册 Service Worker（支持添加到主屏幕/离线） ============ */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+/* ============ 导航 ============ */
+const PAGES=['home','records','weight','profile'];
+function nav(key){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+key).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.nav===key));
+  document.getElementById('screen').scrollTop=0;
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>nav(t.dataset.nav)));
+document.getElementById('tabCapture').addEventListener('click',()=>doCapture());
+
+/* ============ 通用 ============ */
+let toastTimer;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2200);}
+const $=id=>document.getElementById(id);
+
+/* ============ 首页预算 ============ */
+function todayTot(){return DB.days[0].meals.reduce((a,m)=>a+m.kcal,0);}
+function renderBudget(){
+  const sum=todayTot(), pct=Math.min(100,Math.round(sum/DB.goal.targetKcal*100));
+  $('consumedNum').textContent=sum;
+  $('remainKcal').textContent=Math.max(0,DB.goal.targetKcal-sum);
+  $('budgetFill').style.width=pct+'%';
+  $('ringPct').textContent=pct+'%';
+  $('ringFill').style.strokeDashoffset=251.2*(1-pct/100);
+}
+function renderHomeRecords(){
+  $('recordList').innerHTML=NEARLY_RECORDS.map(g=>`
+    <div class="rec-day"><div class="rec-day-label">${g.date}</div>
+      ${g.meals.map(m=>`<div class="rec-row">
+        <div><div class="t"><span class="tag">${m.time}</span>${m.name}</div></div><span class="k">${m.kcal} kcal</span>
+      </div>`).join('')}</div>`).join('');
+}
+/* 体重图表（体重页） */
+function renderWeightChart(){
+  const w=DB.weight, min=Math.min(...w.map(x=>x.kg)), max=Math.max(...w.map(x=>x.kg)), span=max-min||1;
+  $('weightChart').innerHTML=w.map((p,i)=>{const h=20+((p.kg-min)/span)*80;
+    return `<div class="col" style="height:100%">
+      <span class="dot" style="top:${100-h}%"></span><span class="v">${p.kg}</span></div>`;}).join('');
+}
+
+/* ============ 记录页 ============ */
+let dayIdx=0;
+function renderRecords(){
+  const days=DB.days;
+  $('dayChips').innerHTML=days.map((g,i)=>
+    `<button class="chip ${i===dayIdx?'active':''}" onclick="pickDay(${i})">${g.date}</button>`).join('');
+  renderDay();
+}
+function pickDay(i){dayIdx=i;document.querySelectorAll('#dayChips .chip').forEach((c,j)=>c.classList.toggle('active',j===i));renderDay();}
+function renderDay(){
+  const g=DB.days[dayIdx];
+  $('recordsSub').textContent=`${g.date} · 共 ${g.meals.length} 餐`;
+  $('recordsList').innerHTML=`<div class="rec-card">
+    <div class="rec-card-hd"><span class="date">${g.date}</span><span class="sum">已摄 <b>${g.sum} kcal</b></span></div>
+    ${g.meals.map(m=>`<div class="rec-item">
+      <span class="rec-meal-ic"><svg width="17" height="17" viewBox="0 0 24 24"><path d="M4 10h16M8 6h8M12 6V4M9 18h6"/><path d="M12 4c-3 0-5 2-5 5 0 6 5 9 5 9s5-3 5-9c0-3-2-5-5-5z"/></svg></span>
+      <div class="mi"><div class="mt">${m.meal} · ${m.time} · ${m.scale}</div><div class="mn">${m.name}</div></div>
+      <span class="mk">${m.kcal}</span>
+      <button class="mact" onclick="delMeal('${m.id}')" aria-label="删除"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+    </div>`).join('')}
+  </div>`;
+}
+async function delMeal(id){
+  await apiDeleteMeal(id);
+  const g=DB.days[dayIdx];const i=g.meals.findIndex(m=>m.id===id);if(i>-1)g.meals.splice(i,1);
+  g.sum=g.meals.reduce((a,m)=>a+m.kcal,0);renderRecords();renderBudget();toast('已删除');
+}
+
+/* ============ 体重页 ============ */
+let editWeightIdx=null; // 正在编辑的体重在 DB.weight 中的下标；null=新增打卡
+function renderWeightPage(){
+  $('weightBig').textContent=DB.latestWeight;
+  DB.days.forEach(g=>{g.sum=g.meals.reduce((a,m)=>a+m.kcal,0);});
+  $('weightList').innerHTML=[...DB.weight].reverse().map((p,i)=>{
+    const orig=DB.weight.length-1-i;
+    const prev=DB.weight[orig-1];
+    const d=prev?parseFloat((p.kg-prev.kg).toFixed(1)):0;
+    return `<div class="wl-row" onclick="onWeightRow(${orig})" style="cursor:pointer">
+      <span class="d">${p.date}</span>
+      <span class="k">${p.kg} kg</span>
+      <span class="delta ${d<=0?'dn':'up'}">${d===0?'—':(d>0?'+':'')+d}</span>
+      <span class="chev"><svg width="14" height="14" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>`;}).join('');
+  renderWeightChart();
+}
+
+/* ============ 拍照识别 ============ */
+let curResult=null, scaleSel=1;
+function openScan(){$('scanOverlay').classList.add('show');}
+function closeScan(){$('scanOverlay').classList.remove('show');}
+// 点击拍照 → 弹文件选择（在 Android WebView 里会调起相机/相册）
+document.addEventListener('DOMContentLoaded', () => {
+  const fi = document.createElement('input');
+  fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
+  fi.id = 'camInput';
+  document.body.appendChild(fi);
+  fi.addEventListener('change', onFilePicked);
+});
+$('btnCapture').onclick=()=>document.getElementById('camInput').click();
+function onFilePicked(ev){
+  const file=ev.target.files && ev.target.files[0];
+  ev.target.value='';                       // 允许重复选同一张
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>doCapture(reader.result); // result 是 data:image/...;base64,...
+  reader.readAsDataURL(file);
+}
+async function doCapture(base64OrAny){
+  openScan();
+  const res=await apiRecognize(base64OrAny||'');
+  closeScan();scaleSel=1;renderResult(res.data);
+}
+function renderResult(data){
+  curResult=data;
+  $('resultBody').innerHTML=data.items.map(it=>`
+    <div class="result-row"><span class="n">${it.name}<span class="scale-tag">${scaleSel===1?'标准':scaleSel>1?'更多':'更少'}</span><span class="g">${Math.round((it.gram||200)*scaleSel)}g</span></span><span class="k">≈${Math.round(it.kcal*scaleSel)} kcal</span></div>`).join('')+
+    `<div class="result-total"><span class="n">合计${data.confidence?' · 置信度 '+data.confidence:''}</span><span class="k">≈${Math.round(data.totalKcal*scaleSel)} kcal</span></div>`;
+  $('scaleRow').innerHTML=[.5,1,1.5].map(s=>`<div class="sc ${s===scaleSel?'active':''}" onclick="setScale(${s})">${s===1?'标准份':s<1?'半份':'1.5份'}</div>`).join('');
+  $('resultTipTxt').textContent = data.tip || '估算存在 ±20% 误差，可调整下列克重';
+  $('resultOverlay').classList.add('show');
+}
+function setScale(s){scaleSel=s;renderResult(curResult);}
+
+// 手动调整克重（调整每项 gram，kcal 按每克热量联动重算）
+let gramBackup=null;
+function openGramAdjust(){
+  if(!curResult) return toast('请先拍照识别');
+  gramBackup=JSON.parse(JSON.stringify(curResult.items));   // 备份基准
+  renderGramList(curResult.items);
+  $('gramOverlay').classList.add('show');
+}
+function renderGramList(items){
+  $('gramList').innerHTML=items.map((it,i)=>{ const perKcal=it.gram>0?it.kcal/it.gram:0;
+    return `<div class="gram-row">
+      <div class="gl-name">${it.name}</div>
+      <div class="gl-ctrl">
+        <button class="sbtn" onclick="gramStep(${i},${-10})">−</button>
+        <span class="gl-val">${Math.round(it.gram)}g</span>
+        <button class="sbtn" onclick="gramStep(${i},${10})">＋</button>
+      </div>
+      <div class="gl-kcal">≈${Math.round(it.gram*perKcal)} kcal</div>
+    </div>`;}).join('');
+}
+function gramStep(i,delta){
+  const it=curResult.items[i];
+  const perKcal=it.gram>0?it.kcal/it.gram:0;      // 每克热量基准
+  it.gram=Math.max(10, Math.round((it.gram||200)+delta));
+  it.kcal=Math.round(it.gram*perKcal);            // 联动更新该项热量
+  renderGramList(curResult.items);
+}
+function gramReset(){
+  if(!gramBackup) return;
+  curResult.items=JSON.parse(JSON.stringify(gramBackup));
+  renderGramList(curResult.items);
+}
+function gramSave(){
+  // 重算合计热量，联动刷新结果卡与合计
+  curResult.totalKcal=curResult.items.reduce((s,x)=>s+(Number(x.kcal)||0),0);
+  $('gramOverlay').classList.remove('show');
+  renderResult(curResult);
+  toast('克重已更新');
+}
+$('closeGram').onclick=()=>$('gramOverlay').classList.remove('show');
+$('gramSave').onclick=gramSave;
+$('gramReset').onclick=gramReset;
+$('btnAdjust').onclick=openGramAdjust;
+$('btnSaveMeal').onclick=async()=>{
+  $('resultOverlay').classList.remove('show');
+  await apiAddMeal('宫保鸡丁饭 + 清炒时蔬',Math.round(curResult.totalKcal*scaleSel),scaleSel===1?'标准':scaleSel>1?'大份':'半份');
+  DB.days[0].meals.push({id:'m'+Date.now(),meal:'加餐',name:'宫保鸡丁饭 + 清炒时蔬',kcal:Math.round(curResult.totalKcal*scaleSel),scale:scaleSel===1?'标准':scaleSel>1?'大份':'半份',time:'今'});
+  DB.days[0].sum=todayTot();renderBudget();renderHomeRecords();renderRecords();toast('✓ 已计入今日');
+};
+
+/* ============ 语音 ============ */
+let voiceTimer;
+$('btnVoice').onclick=$('btnVoice2').onclick=startVoice;
+function startVoice(){
+  $('voiceOverlay').classList.add('show');$('voiceHint').textContent='正在聆听…';
+  clearTimeout(voiceTimer);
+  voiceTimer=setTimeout(async()=>{
+    $('voiceHint').textContent='「牛肉荞麦面」';
+    const res=await apiVoice();
+    $('voiceHint').textContent=res.data.name+' · ≈'+res.data.kcal+' kcal';
+    setTimeout(()=>{$('voiceOverlay').classList.remove('show');
+      DB.days[0].meals.push({id:'m'+Date.now(),meal:'加餐',name:res.data.name,kcal:res.data.kcal,scale:'中份',time:'今'});
+      DB.days[0].sum=todayTot();renderBudget();renderHomeRecords();renderRecords();toast('✓ 已记录');},900);
+  },1400);
+}
+$('closeVoice').onclick=()=>{clearTimeout(voiceTimer);$('voiceOverlay').classList.remove('show');};
+
+/* ============ 手动录入 ============ */
+let mq='';
+$('btnManual').onclick=$('btnManual2').onclick=async function(){$('manualOverlay').classList.add('show');$('manualRes').innerHTML='';$('manualInput').value='';};
+$('closeManual').onclick=()=>$('manualOverlay').classList.remove('show');
+$('manualInput').addEventListener('input',debounce(async function(){
+  mq=this.value;const r=await apiSearchFood(mq);
+  $('manualRes').innerHTML=r.data.length?r.data.map(f=>`<div class="sr-row" onclick="addManual('${f.name}',${f.kcal})">
+    <div><div class="n">${f.name}</div><div class="k">${f.per} · 约 ${f.kcal} kcal</div></div>
+    <span class="chev">+</span></div>`).join(''):'<div style="text-align:center;color:var(--text-3);padding:20px">未找到，可尝试其他关键词</div>';
+},250));
+function addManual(name,kcal){DB.days[0].meals.push({id:'m'+Date.now(),meal:'加餐',name,kcal,scale:'1份',time:'今'});
+  DB.days[0].sum=todayTot();renderBudget();renderHomeRecords();renderRecords();$('manualOverlay').classList.remove('show');toast('✓ '+name+' 已记录');}
+function debounce(fn,ms){let t;return function(...a){clearTimeout(t);t=setTimeout(()=>fn.apply(this,a),ms);};}
+
+/* ============ 体重操作菜单 ============ */
+let menuWeightIdx=null;
+function onWeightRow(idx){
+  menuWeightIdx=idx;
+  $('weightMenuTitle').textContent=DB.weight[idx].date+' · '+DB.weight[idx].kg+' kg';
+  $('weightMenuOverlay').classList.add('show');
+}
+$('closeWeightMenu').onclick=$('btnMenuCancel').onclick=()=>$('weightMenuOverlay').classList.remove('show');
+$('btnMenuEdit').onclick=()=>{$('weightMenuOverlay').classList.remove('show');if(menuWeightIdx!==null)openWeight(menuWeightIdx);};
+$('btnMenuDelete').onclick=async()=>{
+  if(menuWeightIdx===null)return;
+  await apiDeleteMeal(menuWeightIdx);
+  DB.weight.splice(menuWeightIdx,1);
+  DB.latestWeight=DB.weight.length?DB.weight[DB.weight.length-1].kg:0;
+  $('weightMenuOverlay').classList.remove('show');
+  $('weightBig').textContent=DB.latestWeight;
+  $('homeWeightKg').textContent=DB.latestWeight;
+  renderWeightChart();renderWeightPage();toast('✓ 已删除该条记录');
+};
+
+/* ============ 体重打卡/编辑 ============ */
+function openWeight(idx){
+  if(idx===undefined){editWeightIdx=null; $('weightInput').value=DB.latestWeight;}
+  else{editWeightIdx=idx; $('weightInput').value=DB.weight[idx].kg;}
+  $('weightOverlay').classList.add('show');
+  $('closeWeight').onclick=()=>$('weightOverlay').classList.remove('show');
+}
+$('btnEditWeight').onclick=$('btnWeightCard').onclick=()=>openWeight();
+$('btnSaveWeight').onclick=async()=>{
+  const v=parseFloat($('weightInput').value);if(isNaN(v)||v<=0){toast('请输入有效体重');return;}
+  await apiAddWeight(v);
+  if(editWeightIdx!==null){DB.weight[editWeightIdx].kg=v;}
+  else{DB.weight.push({date:'10-10',kg:v});}
+  DB.latestWeight=DB.weight[DB.weight.length-1].kg;
+  $('weightOverlay').classList.remove('show');
+  $('homeWeightKg').textContent=DB.latestWeight;
+  renderWeightChart();renderWeightPage();toast(editWeightIdx!==null?'✓ 已更新体重':'✓ 已记录 '+v+' kg');
+};
+
+/* ============ 订阅 ============ */
+let selectedPlan='year';
+$('btnSubscribe').onclick=()=>{$('subOverlay').classList.add('show');renderPlans();};
+$('closeSub').onclick=()=>$('subOverlay').classList.remove('show');
+function renderPlans(){
+  const isEn=false;
+  $('subOptions').innerHTML=DB.plans.map(p=>`
+    <div class="val-chip ${p.id===selectedPlan?'active':''}" onclick="pickPlan('${p.id}')">
+      <div style="font-weight:700;font-size:14px">${p.label}</div><div style="font-size:14px;margin-top:4px">${isEn?p.priceUSD:p.priceCNY}</div>
+      ${p.best?'<div style="font-size:10px;color:var(--brand);margin-top:3px">推荐</div>':''}
+    </div>`).join('');
+}
+function pickPlan(id){selectedPlan=id;document.querySelectorAll('#subOptions .val-chip').forEach((c,i)=>c.classList.toggle('active',DB.plans[i].id===id));}
+$('btnPurchase').onclick=async()=>{await apiPurchase(selectedPlan);DB.subscribed=true;$('subOverlay').classList.remove('show');
+  $('subCard').innerHTML=`<span class="ps-badge" style="background:rgba(255,255,255,.2)">PRO · 已解锁</span>
+  <h3>感谢支持 🎉</h3><p>已解锁全部功能，识别不再受限</p><button class="ps-btn" style="background:#fff;color:var(--brand-deep)" id="btnSubManage" onClick="toast('订阅管理（演示）')">管理订阅</button>`;
+  toast('✓ 解锁成功');};
+
+/* ============ 会员等级 & 兑换码 ============ */
+function renderMember(){
+  const b=$('memberBadge');if(!b)return;
+  const pro=DB.memberLevel==='pro'||DB.subscribed;
+  b.className='member-badge '+(pro?'pro':'free');
+  b.innerHTML=pro?('<svg width="11" height="11" viewBox="0 0 24 24"><path d="M12 3l1.9 5.7L19.6 10l-5.7 1.9L12 17.6l-1.9-5.7L4.4 10l5.7-1.9L12 3z"/></svg> PRO 会员'):('<svg width="11" height="11" viewBox="0 0 24 24"><path d="M12 3l1.9 5.7L19.6 10l-5.7 1.9L12 17.6l-1.9-5.7L4.4 10l5.7-1.9L12 3z"/></svg> 标准版');
+}
+$('rowRedeem').onclick=()=>{$('redeemInput').value='';$('redeemOverlay').classList.add('show');};
+$('closeRedeem').onclick=()=>$('redeemOverlay').classList.remove('show');
+$('btnRedeem').onclick=async()=>{
+  const code=$('redeemInput').value;
+  const r=await apiRedeem(code);
+  const d=r.data;
+  if(d.ok){
+    DB.memberLevel=d.level||'pro';DB.subscribed=true;
+    $('redeemOverlay').classList.remove('show');
+    renderMember();renderSubCard();toast('🎉 兑换成功，已开通 PRO');
+  }else if(d.used){toast('该兑换码已被使用过了');}
+  else{toast('兑换码无效，请核对后重试');}
+};
+function renderSubCard(){
+  const card=$('subCard');if(!card)return;
+  if(DB.subscribed||DB.memberLevel==='pro'){
+    card.innerHTML=`<span class="ps-badge" style="background:rgba(255,255,255,.2)">PRO · 已解锁</span>
+    <h3>功能已全部解锁</h3><p>不限次识别已生效，感谢支持</p><button class="ps-btn" style="background:#fff;color:var(--brand-deep)" id="btnSubManage" onClick="toast('订阅管理（演示）')">管理订阅</button>`;
+  }
+}
+
+/* ============ 昵称 & 头像设定 ============ */
+function renderNick(){
+  $('nickName').textContent=DB.profile.nickname;
+  const a=DB.avatars[DB.profile.avatar];
+  const av=document.getElementById('rowAvatar');
+  if(av){av.style.background='linear-gradient(135deg,'+a.bg+','+a.bg+'cc)';
+    av.innerHTML='<span style="font-size:24px">'+a.emoji+'</span>';}
+}
+function openNick(){$('nickInput').value=DB.profile.nickname;$('nickOverlay').classList.add('show');}
+$('rowNick').onclick=openNick;
+$('closeNick').onclick=()=>$('nickOverlay').classList.remove('show');
+$('btnSaveNick').onclick=()=>{
+  const v=$('nickInput').value.trim();if(!v){toast('昵称不能为空');return;}
+  DB.profile.nickname=v;$('nickOverlay').classList.remove('show');renderNick();toast('✓ 昵称已更新');
+};
+
+/* 头像 */
+function renderAvatars(){
+  $('avatarGrid').innerHTML=DB.avatars.map((a,i)=>`
+    <div class="ava-opt ${DB.profile.avatar===i?'active':''}" style="background:${a.bg}" onclick="pickAvatar(${i})">${a.emoji}</div>`).join('');
+}
+function pickAvatar(i){DB.profile.avatar=i;$('avatarOverlay').classList.remove('show');renderNick();renderAvatarsReadState();toast('✓ 头像已更新');}
+function renderAvatarsReadState(){renderAvatars();}
+$('rowAvatar').onclick=()=>{renderAvatars();$('avatarOverlay').classList.add('show');};
+$('closeAvatar').onclick=()=>$('avatarOverlay').classList.remove('show');
+
+/* ============ 目标设置 ============ */
+$('rowGoal').onclick=$('btnEditGoal').onclick=()=>{$('goalKcal').value=DB.goal.targetKcal;$('goalKg').value=DB.goal.weightGoal;$('goalOverlay').classList.add('show');};
+$('closeGoal').onclick=()=>$('goalOverlay').classList.remove('show');
+$('btnSaveGoal').onclick=async()=>{
+  const k=parseInt($('goalKcal').value),g=parseFloat($('goalKg').value);
+  if(!k||k<800){toast('热量需 ≥800 kcal');return;}
+  await apiUpdateGoal({targetKcal:k,weightGoal:g});
+  DB.goal.targetKcal=k;DB.goal.weightGoal=g;
+  $('goalOverlay').classList.remove('show');
+  document.querySelector('#page-profile .me-row:nth-child(1) .s').textContent=k+' kcal';
+  renderBudget();toast('✓ 目标已更新');
+};
+
+/* ============ 初始化成本很低 ============ */
+renderBudget();renderHomeRecords();renderWeightChart();renderWeightPage();renderRecords();renderNick();renderMember();
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "热量拍拍 · AI 拍照识热量",
+  "short_name": "热量拍拍",
+  "description": "拍一下，算热量。AI 识别餐食热量，简单记录每一餐。",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f9f7",
+  "theme_color": "#16a34a",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icons/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
