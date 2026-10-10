@@ -50,6 +50,49 @@ async function apiRecognize(imageData) {
   ], totalKcal:735, tip:"识别服务暂不可用，已回退演示数据" } };
 }
 
+// POST /api/parse —— 语音转写 / 手动录入的文本 → AI 解析食物热量
+// req: { text, extra? }  res: { code, data:{ needMore?, question?, items?, totalKcal?, tip? } }
+// extra 为追问补充：第一轮信息不足返回 needMore=true + question；第二轮带 extra 给出最终估算
+async function apiParseText(text, extra) {
+  const payload = { text, extra: extra || "" };
+  // 1) 云端 Worker
+  try {
+    const resp = await fetch(RECOGNIZE_URL.replace(/\/+$/,'') + "/api/parse", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const r = await resp.json();
+    if (r.code === 0) return r;
+    throw new Error('云端解析:' + (r.msg || '服务异常'));
+  } catch (e1) {
+    console.warn('[apiParseText] cloud worker fail:', e1);
+  }
+  // 2) 本地开发代理
+  const localBase = (location.hostname && location.hostname !== 'file') ? '' : 'http://localhost:3000';
+  if (localBase) {
+    try {
+      const resp = await fetch(localBase + '/api/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const r = await resp.json();
+      if (r.code === 0) return r;
+      throw new Error(r.msg || '本地解析异常');
+    } catch (e2) {
+      console.warn('[apiParseText] local proxy fail:', e2);
+    }
+  }
+  // 3) 兜底演示数据
+  return { code:0, data:{
+    needMore:false,
+    items:[ { id:"f1", name:"牛肉荞麦面（中碗）[演示]", gram:320, kcal:610 } ],
+    totalKcal:610,
+    tip:"解析服务暂不可用，已回退演示数据"
+  } };
+}
+
 // POST /api/voice —— 语音转文字 + 提取食物
 // req: { text }  res: { code, data:{ name, kcal, gram } }
 async function apiVoice(text) {
@@ -89,10 +132,10 @@ async function apiEditMeal(id, patch) { await _delay(100); return { code:0, data
 async function apiAddWeight(kg) { await _delay(150); return { code:0, data:{date:"10-10", kg} }; }
 
 // GET /api/plans · POST /api/purchase —— 订阅
-async function apiPurchase(planId) { await _delay(600); return { code:0, data:{ planId } }; }
+async function apiPurchase(planId) { await _delay(600); persistDB(); return { code:0, data:{ planId } }; }
 
 // PUT /api/goal —— 更新每日目标
-async function apiUpdateGoal(patch) { await _delay(120); return { code:0, data:patch }; }
+async function apiUpdateGoal(patch) { await _delay(120); persistDB(); return { code:0, data:patch }; }
 
 // POST /api/redeem —— 兑换会员码
 // req: { code }  res: { code, data:{ ok, used?, level? } }
@@ -105,5 +148,9 @@ async function apiRedeem(code) {
   const level=DB.redeemCodes[key];
   if(!level) return { code:0, data:{ ok:false } };                          // 无效码
   delete DB.redeemCodes[key]; DB.usedCodes.push(key);                        // 标记已用
+  persistDB();
   return { code:0, data:{ ok:true, level } };
 }
+
+// 个人信息（昵称/头像）
+async function apiUpdateProfile(patch) { await _delay(120); persistDB(); return { code:0, data:patch }; }

@@ -68,3 +68,27 @@ window.DB = {
 window.NEARLY_RECORDS = DB.days.slice(0, 2).map(g => ({
   date: g.date, meals: g.meals.map(m => ({ time: m.time, name: m.name, kcal: m.kcal })),
 }));
+
+/* ============ 本地持久化（localStorage） ============ */
+const DB_KEY = "heat-tracking-db-v1";
+// 启动时恢复：有存档用存档（与 mock 结构合并，兼容字段缺失），没有则用初始数据
+(function loadDB(){
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(!saved || typeof saved !== "object") return;
+    // 逐字段合并，防止旧存档缺字段导致 undefined
+    window.DB = Object.assign({}, window.DB, saved);
+    if(saved.goal) DB.goal = Object.assign({}, window.DB.goal, saved.goal);
+    if(saved.profile) DB.profile = Object.assign({}, window.DB.profile, saved.profile);
+    // 更新便捷引用（NEARLY_RECORDS 是派生数据，保持初始即可）
+  }catch(e){
+    console.warn("[mock] 读取本地存档失败，使用初始数据:", e);
+  }
+})();
+// 保存：每次写操作后调用（见 api.js）
+function persistDB(){
+  try{ localStorage.setItem(DB_KEY, JSON.stringify(window.DB)); }
+  catch(e){ console.warn("[mock] 写入本地存档失败:", e); }
+}

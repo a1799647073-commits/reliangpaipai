@@ -1,0 +1,6 @@
+{
+  "appId": "com.heatpai.pai",
+  "appName": "热量拍拍",
+  "webDir": ".",
+  "server": { "androidScheme": "https" }
+}

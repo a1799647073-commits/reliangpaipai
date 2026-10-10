@@ -148,7 +148,7 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-lin
           </div>
           <div style="font-size:12px;color:var(--text-2);text-align:right;">
             <div style="font-weight:700;color:var(--brand)">↓ 1.6kg · 30天</div>
-            <div style="margin-top:2px;">距目标 62kg 还差 4kg</div>
+            <div style="margin-top:2px;">距目标 <span id="goalGap">62kg 还差 4kg</span></div>
           </div>
         </div>
         <div class="line-chart" id="weightChart"></div>
@@ -156,11 +156,11 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-lin
       <div class="chart-stats">
         <div class="stat-item"><div class="sv" style="color:var(--brand)">72.1%</div><div class="sk">BMI 下降</div></div>
         <div class="stat-item"><div class="sv">18</div><div class="sk">累计打卡</div></div>
-        <div class="stat-item"><div class="sv" style="color:var(--heat)">78%</div><div class="sk">目标进度</div></div>
+        <div class="stat-item"><div class="sv" style="color:var(--heat)" id="goalPct">78%</div><div class="sk">目标进度</div></div>
       </div>
 
       <div class="goal-box">
-        <div class="t">目标体重 <b>62.0 kg</b><br><span style="font-size:11px;opacity:.75">还差 4.0 kg · 预计 8 周后达成</span></div>
+        <div class="t">目标体重 <b id="goalKgVal">62.0 kg</b><br><span style="font-size:11px;opacity:.75" id="goalSub">还差 4.0 kg · 预计 8 周后达成</span></div>
         <button id="btnEditGoal">修改目标</button>
       </div>
 
@@ -192,7 +192,7 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-lin
 
       <div class="me-group">
         <div class="me-row" id="rowGoal"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></span><div class="mt"><div class="t">每日热量目标</div><div class="s" id="goalText">1800 kcal</div></div><span class="chev">›</span></div>
-        <div class="me-row" id="rowAim"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><div class="mt"><div class="t">减重目标</div><div class="s">62.0 kg</div></div><span class="chev">›</span></div>
+        <div class="me-row" id="rowAim"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><div class="mt"><div class="t">减重目标</div><div class="s" id="aimKgVal">62.0 kg</div></div><span class="chev">›</span></div>
         <div class="me-row"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div class="mt"><div class="t">隐私模式</div><div class="s">数据仅存本机</div></div>
           <label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
         <div class="me-row" id="rowRedeem"><span class="mic"><svg width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span><div class="mt"><div class="t">兑换码</div><div class="s">输入兑换码开通会员</div></div><span class="chev">›</span></div>
@@ -211,19 +211,19 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-lin
   <!-- 底部导航 -->
   <nav class="tabbar">
     <button class="tab active" data-nav="home" aria-label="今日">
-      <svg width="21" height="21" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>今日
+      <svg width="25" height="25" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>今日
     </button>
     <button class="tab" data-nav="records" aria-label="记录">
-      <svg width="21" height="21" viewBox="0 0 24 24"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>记录
+      <svg width="25" height="25" viewBox="0 0 24 24"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>记录
     </button>
     <button class="tab-main" id="tabCapture" aria-label="拍照">
-      <svg width="26" height="26" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+      <svg width="30" height="30" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
     </button>
     <button class="tab" data-nav="weight" aria-label="体重">
-      <svg width="21" height="21" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/></svg>体重
+      <svg width="25" height="25" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/></svg>体重
     </button>
     <button class="tab" data-nav="profile" aria-label="我的">
-      <svg width="21" height="21" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>我的
+      <svg width="25" height="25" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>我的
     </button>
   </nav>
 </main>
@@ -240,9 +240,9 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-lin
 
 <!-- 识别结果弹层 -->
 <div class="overlay" id="resultOverlay">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title"><span>识别结果</span><button class="x" id="closeResult" aria-label="关闭"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+  <div class="sheet" id="resultSheet">
+    <div class="sheet-handle"><span class="handle-hint">下拉关闭</span></div>
+    <div class="sheet-title"><span>识别结果</span></div>
     <div class="result-card" id="resultBody"></div>
     <div class="result-tip" id="resultTip">
       <svg width="15" height="15" viewBox="0 0 24 24" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
@@ -275,8 +275,38 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-lin
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title"><span>手动录入</span><button class="x" id="closeManual"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
-    <div class="search-box"><input id="manualInput" placeholder="搜索食物，如「鸡胸肉」" /></div>
+    <div class="search-box"><input id="manualInput" placeholder="描述吃过的食物，如「一碗牛肉面 加个蛋」" /></div>
+    <button class="btn primary" id="btnAiParse" style="width:100%;margin:12px 0 4px"><svg width="15" height="15" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:6px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>AI 智能解析</button>
     <div class="search-res" id="manualRes"></div>
+  </div>
+</div>
+
+<!-- AI 追问弹层（只追问一次） -->
+<div class="overlay" id="askOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>AI 需要确认一下</span><button class="x" id="closeAsk"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div class="hint" id="askQuestion" style="text-align:left;margin-bottom:12px;line-height:1.6"></div>
+    <div class="search-box"><input id="askInput" placeholder="补充一下，如：大概 200 克 / 一碗 / 一盘" /></div>
+    <div class="cta-row" style="margin-top:14px">
+      <button class="btn ghost" id="btnAskSkip">按标准份估算</button>
+      <button class="btn primary" id="btnAskSubmit">补充并解析</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI 结果确认/调整弹层 -->
+<div class="overlay" id="confirmOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>确认与调整</span><button class="x" id="closeConfirm"><svg width="18" height="18" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></button></div>
+    <div class="hint" id="confirmTip" style="text-align:left;margin-bottom:10px;line-height:1.5"></div>
+    <div class="confirm-list" id="confirmList"></div>
+    <div class="confirm-total">合计 <b id="confirmTotal">0</b> kcal</div>
+    <div class="cta-row" style="margin-top:14px">
+      <button class="btn ghost" id="btnConfirmCancel">取消</button>
+      <button class="btn primary" id="btnConfirmSave">计入今日</button>
+    </div>
   </div>
 </div>
 
@@ -456,7 +486,24 @@ function renderDay(){
 async function delMeal(id){
   await apiDeleteMeal(id);
   const g=DB.days[dayIdx];const i=g.meals.findIndex(m=>m.id===id);if(i>-1)g.meals.splice(i,1);
-  g.sum=g.meals.reduce((a,m)=>a+m.kcal,0);renderRecords();renderBudget();toast('已删除');
+  g.sum=g.meals.reduce((a,m)=>a+m.kcal,0);renderRecords();renderBudget();persistDB();toast('已删除');
+}
+
+/* ============ 目标体重展示（三处联动） ============ */
+function renderGoal(){
+  const goal=DB.goal.weightGoal, cur=parseFloat(DB.latestWeight)||0;
+  const gap=Math.max(0,parseFloat((cur-goal).toFixed(1)));
+  const start=DB.weight.length?DB.weight[0].kg:cur;
+  const total=Math.max(0.1,start-goal);
+  const done=Math.max(0,start-cur);
+  const pct=Math.min(100,Math.round(done/total*100));
+  const weeks=gap>0?Math.ceil(gap/0.5):0;
+  const kgVal=$('goalKgVal'), kgSub=$('goalSub'), pctEl=$('goalPct'), gapEl=$('goalGap'), aimEl=$('aimKgVal');
+  if(kgVal)kgVal.textContent=goal.toFixed(1)+' kg';
+  if(kgSub)kgSub.textContent=gap>0?('还差 '+gap.toFixed(1)+' kg · 预计 '+(weeks||'1')+' 周后达成'):'已达成目标 🎉';
+  if(pctEl)pctEl.textContent=pct+'%';
+  if(gapEl)gapEl.textContent=gap>0?(goal.toFixed(0)+'kg 还差 '+gap.toFixed(0)+'kg'):'已达成目标';
+  if(aimEl)aimEl.textContent=goal.toFixed(1)+' kg';
 }
 
 /* ============ 体重页 ============ */
@@ -557,42 +604,155 @@ $('closeGram').onclick=()=>$('gramOverlay').classList.remove('show');
 $('gramSave').onclick=gramSave;
 $('gramReset').onclick=gramReset;
 $('btnAdjust').onclick=openGramAdjust;
+
+/* ===== 识别结果：下拉关闭（无右上角按钮） ===== */
+function closeResultSheet(){ $('resultOverlay').classList.remove('show'); }
+(function(){
+  const sheet=$('resultSheet'); if(!sheet) return;
+  let startY=0, dy=0, dragging=false;
+  const onDown=(e)=>{ dragging=true; startY=(e.touches?e.touches[0]:e).clientY; sheet.style.transition='none'; };
+  const onMove=(e)=>{ if(!dragging) return; dy=(e.touches?e.touches[0]:e).clientY-startY;
+    if(dy<0) dy=0; sheet.style.transform='translateY('+dy+'px)'; sheet.style.opacity=String(Math.max(0,1-dy/320)); };
+  const onUp=()=>{ if(!dragging) return; dragging=false; sheet.style.transition='';
+    if(dy>110){ closeResultSheet(); } sheet.style.transform=''; sheet.style.opacity=''; dy=0; };
+  sheet.addEventListener('touchstart',onDown,{passive:true});
+  sheet.addEventListener('touchmove',onMove,{passive:true});
+  sheet.addEventListener('touchend',onUp);
+  sheet.addEventListener('mousedown',onDown);
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('mouseup',onUp);
+})();
 $('btnSaveMeal').onclick=async()=>{
   $('resultOverlay').classList.remove('show');
   await apiAddMeal('宫保鸡丁饭 + 清炒时蔬',Math.round(curResult.totalKcal*scaleSel),scaleSel===1?'标准':scaleSel>1?'大份':'半份');
   DB.days[0].meals.push({id:'m'+Date.now(),meal:'加餐',name:'宫保鸡丁饭 + 清炒时蔬',kcal:Math.round(curResult.totalKcal*scaleSel),scale:scaleSel===1?'标准':scaleSel>1?'大份':'半份',time:'今'});
-  DB.days[0].sum=todayTot();renderBudget();renderHomeRecords();renderRecords();toast('✓ 已计入今日');
+  DB.days[0].sum=todayTot();renderBudget();renderHomeRecords();renderRecords();persistDB();toast('✓ 已计入今日');
 };
 
-/* ============ 语音 ============ */
-let voiceTimer;
+/* ============ 语音 + 手动录入（AI 解析 / 追问一轮 / 可调整） ============ */
+// ---- 语音：优先用浏览器原生语音转写（Web Speech API），不支持则引导手动输入 ----
+let voiceRec = null, voiceTimer;
 $('btnVoice').onclick=$('btnVoice2').onclick=startVoice;
 function startVoice(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){
+    // 浏览器不支持语音 → 直接落到手动录入
+    $('voiceOverlay').classList.remove('show');
+    openManual('此浏览器不支持语音识别，请改用下方输入描述');
+    return;
+  }
   $('voiceOverlay').classList.add('show');$('voiceHint').textContent='正在聆听…';
-  clearTimeout(voiceTimer);
-  voiceTimer=setTimeout(async()=>{
-    $('voiceHint').textContent='「牛肉荞麦面」';
-    const res=await apiVoice();
-    $('voiceHint').textContent=res.data.name+' · ≈'+res.data.kcal+' kcal';
-    setTimeout(()=>{$('voiceOverlay').classList.remove('show');
-      DB.days[0].meals.push({id:'m'+Date.now(),meal:'加餐',name:res.data.name,kcal:res.data.kcal,scale:'中份',time:'今'});
-      DB.days[0].sum=todayTot();renderBudget();renderHomeRecords();renderRecords();toast('✓ 已记录');},900);
-  },1400);
+  voiceRec=new SR();voiceRec.lang='zh-CN';voiceRec.interimResults=false;voiceRec.maxAlternatives=1;
+  voiceRec.onresult=e=>{
+    const text=e.results[0][0].transcript;
+    $('voiceHint').textContent='「'+text+'」 · 解析中…';
+    $('voiceOverlay').classList.remove('show');
+    aiParseFlow(text);
+  };
+  voiceRec.onerror=e=>{
+    $('voiceOverlay').classList.remove('show');
+    if(e.error==='not-allowed'){openManual('未获得麦克风权限，请改用下方输入描述');}
+    else{openManual('语音识别失败（'+e.error+'），请改用输入描述');}
+  };
+  voiceRec.onend=()=>{ if($('voiceOverlay').classList.contains('show')) setTimeout(()=>$('voiceOverlay').classList.remove('show'),800); };
+  try{voiceRec.start();}catch(e){$('voiceOverlay').classList.remove('show');openManual('无法启动语音，请改用输入描述');}
 }
-$('closeVoice').onclick=()=>{clearTimeout(voiceTimer);$('voiceOverlay').classList.remove('show');};
+$('closeVoice').onclick=()=>{clearTimeout(voiceTimer);if(voiceRec)try{voiceRec.abort();}catch(e){};voiceRec=null;$('voiceOverlay').classList.remove('show');};
 
-/* ============ 手动录入 ============ */
+// ---- AI 解析统一流程：apiParseText → 不足则追问一次 → 确认/调整弹层 ----
+let aiText='', aiExtra='';
+async function aiParseFlow(text){
+  aiText=text;aiExtra='';
+  $('askOverlay').classList.remove('show');
+  const r=await apiParseText(text);
+  const d=r.data||{};
+  if(d.needMore){
+    $('askQuestion').textContent='为了估算更准确：'+d.question;
+    $('askInput').value='';
+    $('askOverlay').classList.add('show');
+    setTimeout(()=>$('askInput').focus(),120);
+    return;
+  }
+  openConfirm(d);
+}
+$('btnAskSubmit').onclick=async()=>{
+  aiExtra=$('askInput').value.trim();
+  if(!aiExtra){toast('请补充一点信息');return;}
+  $('askOverlay').classList.remove('show');
+  const r=await apiParseText(aiText,aiExtra);
+  const d=r.data||{};
+  if(d.needMore){ // 第二轮仍不足 → 标准份兜底
+    openConfirm({needMore:false,items:[{id:'f0',name:aiText||'这餐',gram:0,kcal:0}],totalKcal:0,tip:'信息仍不足，请手动调整后计入'});
+    return;
+  }
+  openConfirm(d);
+};
+$('btnAskSkip').onclick=()=>{ // 跳过追问 → 用标准份兜底结果
+  $('askOverlay').classList.remove('show');
+  openConfirm({needMore:false,items:[{id:'f0',name:aiText||'这餐',gram:0,kcal:0}],totalKcal:0,tip:'按标准份估算，请手动调整克重与热量'});
+};
+$('closeAsk').onclick=()=>$('askOverlay').classList.remove('show');
+
+// ---- 确认/调整弹层：每项名称/克重/热量可编辑，合计实时联动 ----
+let confirmItems=[];
+function openConfirm(d){
+  confirmItems=(d.items||[]).length?d.items:[{id:'f0',name:aiText||'这餐',gram:0,kcal:0}];
+  $('confirmTip').textContent=d.tip||'可手动调整名称、克重与热量，合计将自动更新';
+  renderConfirm();$('confirmOverlay').classList.add('show');
+}
+function renderConfirm(){
+  $('confirmList').innerHTML=confirmItems.map((it,i)=>`
+    <div class="cf-row">
+      <input class="cf-name" value="${it.name}" data-i="${i}" data-f="name">
+      <div class="cf-nums">
+        <input class="cf-num" type="number" value="${it.gram||''}" placeholder="克" data-i="${i}" data-f="gram">
+        <input class="cf-num" type="number" value="${it.kcal||''}" placeholder="kcal" data-i="${i}" data-f="kcal">
+      </div>
+      <button class="cf-del" onclick="confirmItems.splice(${i},1);renderConfirm();" aria-label="移除">✕</button>
+    </div>`).join('');
+  $('confirmTotal').textContent=confirmItems.reduce((a,x)=>a+(Number(x.kcal)||0),0);
+}
+$('confirmList').addEventListener('input',e=>{
+  const el=e.target, i=+el.dataset.i, f=el.dataset.f;
+  if(!confirmItems[i])return;
+  confirmItems[i][f]=f==='name'?el.value:(Number(el.value)||0);
+  if(f==='gram'||f==='kcal')$('confirmTotal').textContent=confirmItems.reduce((a,x)=>a+(Number(x.kcal)||0),0);
+});
+$('closeConfirm').onclick=$('btnConfirmCancel').onclick=()=>$('confirmOverlay').classList.remove('show');
+$('btnConfirmSave').onclick=()=>{
+  const items=confirmItems.filter(x=>x.name&&Number(x.kcal)>0);
+  if(!items.length){toast('请至少保留一项有效食物');return;}
+  items.forEach(it=>DB.days[0].meals.push({id:'m'+Date.now()+Math.random().toString(36).slice(2,5),meal:'加餐',name:it.name,kcal:Number(it.kcal),scale:(Number(it.gram)||0)+'g',time:'今'}));
+  DB.days[0].sum=todayTot();renderBudget();renderHomeRecords();renderRecords();persistDB();
+  $('confirmOverlay').classList.remove('show');
+  toast('✓ 已计入 '+items.length+' 项');
+};
+
+// ---- 手动录入弹层 ----
 let mq='';
-$('btnManual').onclick=$('btnManual2').onclick=async function(){$('manualOverlay').classList.add('show');$('manualRes').innerHTML='';$('manualInput').value='';};
+function openManual(hint){
+  $('manualOverlay').classList.add('show');
+  $('manualRes').innerHTML=hint?'<div style="text-align:center;color:var(--text-3);padding:16px">'+hint+'</div>':'';
+  $('manualInput').value='';
+  setTimeout(()=>$('manualInput').focus(),120);
+}
+$('btnManual').onclick=$('btnManual2').onclick=()=>openManual();
 $('closeManual').onclick=()=>$('manualOverlay').classList.remove('show');
+$('btnAiParse').onclick=()=>{
+  const v=$('manualInput').value.trim();
+  if(!v){toast('请先描述吃过的食物');return;}
+  $('manualOverlay').classList.remove('show');
+  aiParseFlow(v);
+};
 $('manualInput').addEventListener('input',debounce(async function(){
-  mq=this.value;const r=await apiSearchFood(mq);
+  mq=this.value;if(!mq){$('manualRes').innerHTML='';return;}
+  const r=await apiSearchFood(mq);
   $('manualRes').innerHTML=r.data.length?r.data.map(f=>`<div class="sr-row" onclick="addManual('${f.name}',${f.kcal})">
     <div><div class="n">${f.name}</div><div class="k">${f.per} · 约 ${f.kcal} kcal</div></div>
     <span class="chev">+</span></div>`).join(''):'<div style="text-align:center;color:var(--text-3);padding:20px">未找到，可尝试其他关键词</div>';
 },250));
 function addManual(name,kcal){DB.days[0].meals.push({id:'m'+Date.now(),meal:'加餐',name,kcal,scale:'1份',time:'今'});
-  DB.days[0].sum=todayTot();renderBudget();renderHomeRecords();renderRecords();$('manualOverlay').classList.remove('show');toast('✓ '+name+' 已记录');}
+  DB.days[0].sum=todayTot();renderBudget();renderHomeRecords();renderRecords();$('manualOverlay').classList.remove('show');persistDB();toast('✓ '+name+' 已记录');}
 function debounce(fn,ms){let t;return function(...a){clearTimeout(t);t=setTimeout(()=>fn.apply(this,a),ms);};}
 
 /* ============ 体重操作菜单 ============ */
@@ -612,7 +772,7 @@ $('btnMenuDelete').onclick=async()=>{
   $('weightMenuOverlay').classList.remove('show');
   $('weightBig').textContent=DB.latestWeight;
   $('homeWeightKg').textContent=DB.latestWeight;
-  renderWeightChart();renderWeightPage();toast('✓ 已删除该条记录');
+  renderWeightChart();renderWeightPage();renderGoal();persistDB();toast('✓ 已删除该条记录');
 };
 
 /* ============ 体重打卡/编辑 ============ */
@@ -631,7 +791,7 @@ $('btnSaveWeight').onclick=async()=>{
   DB.latestWeight=DB.weight[DB.weight.length-1].kg;
   $('weightOverlay').classList.remove('show');
   $('homeWeightKg').textContent=DB.latestWeight;
-  renderWeightChart();renderWeightPage();toast(editWeightIdx!==null?'✓ 已更新体重':'✓ 已记录 '+v+' kg');
+  renderWeightChart();renderWeightPage();renderGoal();persistDB();toast(editWeightIdx!==null?'✓ 已更新体重':'✓ 已记录 '+v+' kg');
 };
 
 /* ============ 订阅 ============ */
@@ -647,7 +807,7 @@ function renderPlans(){
     </div>`).join('');
 }
 function pickPlan(id){selectedPlan=id;document.querySelectorAll('#subOptions .val-chip').forEach((c,i)=>c.classList.toggle('active',DB.plans[i].id===id));}
-$('btnPurchase').onclick=async()=>{await apiPurchase(selectedPlan);DB.subscribed=true;$('subOverlay').classList.remove('show');
+$('btnPurchase').onclick=async()=>{await apiPurchase(selectedPlan);DB.subscribed=true;DB.memberLevel='pro';persistDB();$('subOverlay').classList.remove('show');renderMember();
   $('subCard').innerHTML=`<span class="ps-badge" style="background:rgba(255,255,255,.2)">PRO · 已解锁</span>
   <h3>感谢支持 🎉</h3><p>已解锁全部功能，识别不再受限</p><button class="ps-btn" style="background:#fff;color:var(--brand-deep)" id="btnSubManage" onClick="toast('订阅管理（演示）')">管理订阅</button>`;
   toast('✓ 解锁成功');};
@@ -693,7 +853,7 @@ $('rowNick').onclick=openNick;
 $('closeNick').onclick=()=>$('nickOverlay').classList.remove('show');
 $('btnSaveNick').onclick=()=>{
   const v=$('nickInput').value.trim();if(!v){toast('昵称不能为空');return;}
-  DB.profile.nickname=v;$('nickOverlay').classList.remove('show');renderNick();toast('✓ 昵称已更新');
+  DB.profile.nickname=v;$('nickOverlay').classList.remove('show');renderNick();persistDB();toast('✓ 昵称已更新');
 };
 
 /* 头像 */
@@ -701,7 +861,7 @@ function renderAvatars(){
   $('avatarGrid').innerHTML=DB.avatars.map((a,i)=>`
     <div class="ava-opt ${DB.profile.avatar===i?'active':''}" style="background:${a.bg}" onclick="pickAvatar(${i})">${a.emoji}</div>`).join('');
 }
-function pickAvatar(i){DB.profile.avatar=i;$('avatarOverlay').classList.remove('show');renderNick();renderAvatarsReadState();toast('✓ 头像已更新');}
+function pickAvatar(i){DB.profile.avatar=i;$('avatarOverlay').classList.remove('show');renderNick();renderAvatarsReadState();persistDB();toast('✓ 头像已更新');}
 function renderAvatarsReadState(){renderAvatars();}
 $('rowAvatar').onclick=()=>{renderAvatars();$('avatarOverlay').classList.add('show');};
 $('closeAvatar').onclick=()=>$('avatarOverlay').classList.remove('show');
@@ -716,11 +876,11 @@ $('btnSaveGoal').onclick=async()=>{
   DB.goal.targetKcal=k;DB.goal.weightGoal=g;
   $('goalOverlay').classList.remove('show');
   document.querySelector('#page-profile .me-row:nth-child(1) .s').textContent=k+' kcal';
-  renderBudget();toast('✓ 目标已更新');
+  renderBudget();renderGoal();toast('✓ 目标已更新');
 };
 
 /* ============ 初始化成本很低 ============ */
-renderBudget();renderHomeRecords();renderWeightChart();renderWeightPage();renderRecords();renderNick();renderMember();
+renderBudget();renderHomeRecords();renderWeightChart();renderWeightPage();renderGoal();renderRecords();renderNick();renderMember();
 </script>
 </body>
 </html>
